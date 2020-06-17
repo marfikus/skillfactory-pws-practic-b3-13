@@ -81,21 +81,64 @@ class TopLevelTag:
 
     def __iadd__(self, other):
         self.children.append(other)
+        return self
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        return self
+        # if self.toplevel:
+        #     print("<{}>".format(self.tag))
+        #     for child in self.children:
+        #         print(child)
+        #     print("</{}>".format(self.tag))
+
+    def __str__(self):
+        attrs = ""
+        for attribute, value in self.attributes.items():
+            attrs += str(' {}="{}"'.format(attribute, value))
+
+        if self.children:
+            opening = "<{tag}{attrs}>".format(tag=self.tag, attrs=attrs)
+            internal = "{}".format(self.text)
+            for child in self.children:
+                internal += str(child)
+            ending = "</{}>".format(self.tag)
+            return opening + internal + ending
+        else:
+            return "<{tag}{attrs}>{text}</{tag}>".format(
+                tag=self.tag, attrs=attrs, text=self.text
+            )
+
 
 
 
 if __name__ == "__main__":
 
-    with Tag("div", klass=("container", "container-fluid"), id="lead") as div:
-        # div.text = "ddd"
-        with Tag("p") as p:
-            p.text = "dfsfsd"
-            div += p
+    with TopLevelTag("head") as head:
+        with Tag("title") as title:
+            title.text = "hello"
+            head += title
 
-        with Tag("img", is_single=True, src="/icon.png") as img:
-            div += img
+        print(head)
 
-        print(div)
+    with TopLevelTag("body") as body:
+        with Tag("h1", klass=("main-text",)) as h1:
+            h1.text = "Test"
+            body += h1
+
+        with Tag("div", klass=("container", "container-fluid"), id="lead") as div:
+            with Tag("p") as paragraph:
+                paragraph.text = "another test"
+                div += paragraph
+
+            with Tag("img", is_single=True, src="/icon.png") as img:
+                div += img
+
+            body += div
+
+        print(body)
 
 
     # with HTML(output=None) as doc:
