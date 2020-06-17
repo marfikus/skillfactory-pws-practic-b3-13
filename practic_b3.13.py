@@ -49,21 +49,43 @@ class Tag:
             else:
                 return "<{tag}{attrs}>{text}</{tag}>".format(
                     tag=self.tag, attrs=attrs, text=self.text
-                    )
+                )
 
 
 class HTML:
     def __init__(self, output):
+        self.tag = "html"
         self.output = output
         self.children = []
+        self.indent = 0
 
-    def __str__(self):
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        if self.children:
+            opening = "<{tag}>".format(tag=self.tag)
+            internal = ""
+            for child in self.children:
+                internal += str(child)
+            ending = "</{tag}>".format(tag=self.tag)
+            result = opening + internal + ending
+        else:
+            result = "<{tag}></{tag}>".format(tag=self.tag)
+
         if self.output is None:
-            # print
-            pass
+            print(result)
+        else:
+            with open(self.output, "w", encoding="UTF-8") as f:
+                print(result, file=f)
+
+
+    # def __str__(self):
+    #     pass
 
     def __iadd__(self, other):
         self.children.append(other)
+        return self
 
 
 class TopLevelTag:
@@ -116,51 +138,51 @@ class TopLevelTag:
 
 if __name__ == "__main__":
 
-    with TopLevelTag("head") as head:
-        with Tag("title") as title:
-            title.text = "hello"
-            head += title
+    # with TopLevelTag("head") as head:
+    #     with Tag("title") as title:
+    #         title.text = "hello"
+    #         head += title
 
-        print(head)
+    #     print(head)
 
-    with TopLevelTag("body") as body:
-        with Tag("h1", klass=("main-text",)) as h1:
-            h1.text = "Test"
-            body += h1
+    # with TopLevelTag("body") as body:
+    #     with Tag("h1", klass=("main-text",)) as h1:
+    #         h1.text = "Test"
+    #         body += h1
 
-        with Tag("div", klass=("container", "container-fluid"), id="lead") as div:
-            with Tag("p") as paragraph:
-                paragraph.text = "another test"
-                div += paragraph
+    #     with Tag("div", klass=("container", "container-fluid"), id="lead") as div:
+    #         with Tag("p") as paragraph:
+    #             paragraph.text = "another test"
+    #             div += paragraph
 
-            with Tag("img", is_single=True, src="/icon.png") as img:
-                div += img
+    #         with Tag("img", is_single=True, src="/icon.png") as img:
+    #             div += img
 
-            body += div
+    #         body += div
 
-        print(body)
+    #     print(body)
 
 
-    # with HTML(output=None) as doc:
-    #     with TopLevelTag("head") as head:
-    #         with Tag("title") as title:
-    #             title.text = "hello"
-    #             head += title
-    #         doc += head
+    with HTML(output="doc.html") as doc:
+        with TopLevelTag("head") as head:
+            with Tag("title") as title:
+                title.text = "hello"
+                head += title
+            doc += head
 
-    #     with TopLevelTag("body") as body:
-    #         with Tag("h1", klass=("main-text",)) as h1:
-    #             h1.text = "Test"
-    #             body += h1
+        with TopLevelTag("body") as body:
+            with Tag("h1", klass=("main-text",)) as h1:
+                h1.text = "Test"
+                body += h1
 
-    #         with Tag("div", klass=("container", "container-fluid"), id="lead") as div:
-    #             with Tag("p") as paragraph:
-    #                 paragraph.text = "another test"
-    #                 div += paragraph
+            with Tag("div", klass=("container", "container-fluid"), id="lead") as div:
+                with Tag("p") as paragraph:
+                    paragraph.text = "another test"
+                    div += paragraph
 
-    #             with Tag("img", is_single=True, src="/icon.png") as img:
-    #                 div += img
+                with Tag("img", is_single=True, src="/icon.png") as img:
+                    div += img
 
-    #             body += div
+                body += div
 
-    #         doc += body
+            doc += body
