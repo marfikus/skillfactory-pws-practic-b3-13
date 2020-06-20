@@ -4,7 +4,6 @@ class HTML:
         self.tag = "html"
         self.output = output
         self.children = []
-        self.indent = 0
 
     def __enter__(self):
         return self
@@ -39,19 +38,11 @@ class TopLevelTag(HTML):
         self.children = []
         self.indent = 0
 
-
         if klass is not None:
             self.attributes["class"] = " ".join(klass)
 
         for attr, value in kwargs.items():
             self.attributes[attr] = value
-
-    def __iadd__(self, other):
-        self.children.append(other)
-        return self
-
-    def __enter__(self):
-        return self
 
     def __exit__(self, type, value, traceback):
         return self
@@ -95,12 +86,6 @@ class Tag(TopLevelTag):
             self.children.append(other)
         return self
 
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):
-        return self
-
     def __str__(self):
         whitespaces = (self.indent * 2) * " "
         attrs = ""
@@ -126,6 +111,7 @@ class Tag(TopLevelTag):
 
 if __name__ == "__main__":
 
+    # Если output=None, то вывод на экран, иначе в файл, который указан.
     with HTML(output=None) as doc:
     # with HTML(output="doc.html") as doc:
         with TopLevelTag("head") as head:
